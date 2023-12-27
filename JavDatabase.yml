@@ -1,0 +1,54 @@
+name: JAVdatabase
+performerByName:
+  action: scrapeXPath
+  queryURL: https://www.javdatabase.com/?wpessid=391488&s={}
+  scraper: performerSearch
+
+performerByURL:
+  - action: scrapeXPath
+    url:
+      - https://www.javdatabase.com/
+    scraper: performerScraper
+
+xPathScrapers:
+  performerSearch:
+    performer:
+      Name: //p[@class="display-6"]/a/text()
+      URL: //p[@class="display-6"]/a/@href  
+
+  performerScraper:
+    common:
+      $label: /html/body/div[1]/div/div/main/div[1]/div[1]/div[2]
+    performer:
+      Name: 
+        selector: //h1[@class="idol-name"]/text()
+        postProcess:
+          - replace:
+              - regex: " - JAV Profile$"
+                with: ""
+      URL: //link[@rel="canonical"]/@href
+      Image: //div[@class="idol-portrait"]//img/@data-src
+      Gender:
+        fixed: "Female"
+      Country:
+        fixed: "Japan"
+      Ethnicity:
+        fixed: "Asian"
+      HairColor: $label/a[@class="idol-box-link" and contains(@href, '_hair_color=')]/text()
+      Birthdate: //b[text()='DOB:']/following-sibling::a/text()[1]
+      Height:
+        selector: $label//a[@class="idol-box-link" and contains(@href, '_height=')]/text()
+        postProcess:
+          - replace:
+              - regex: ^(\d+).+$
+                with: "$1"
+      Measurements:
+        selector: //b[text()='Measurements:']/following-sibling::text()[1]|//b[text()='Cup:']/following-sibling::a/text()[1]
+        concat: "|"
+        postProcess:
+          - replace:
+              - regex: (\d*)([a-zA-Z-]*)(\d*)(-)(\d*)(.+?)([a-zA-Z]+)(.*)
+                with: $1$7-$3-$5
+      Twitter: $label/p/a[contains(@href, 'twitter')]/@href
+      Details: $label/p/a[contains(@href, 'linx')]/@href
+      Aliases: //b[text()='Alt:']/following-sibling::text()[1]
